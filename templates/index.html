@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHCP Network Simulator | NetSim</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="brand">
+        <span class="brand-icon">🌐</span>
+        <div>
+            <h2>NetSim</h2>
+            <small>DHCP Simulator</small>
+        </div>
+    </div>
+
+    <div class="menu-label">MAIN MENU</div>
+
+    <a href="/" class="nav-item active">▦ &nbsp; Dashboard</a>
+    <a href="/topology" class="nav-item">⌘ &nbsp; Network Topology</a>
+    <a href="/ip-management" class="nav-item">▣ &nbsp; IP Management</a>
+    <a href="/lease-management" class="nav-item">◷ &nbsp; Lease Management</a>
+    <a href="/simulation" class="nav-item">⇄ &nbsp; DHCP Simulation</a>
+    <a href="/activity-logs" class="nav-item">▤ &nbsp; Activity Logs</a>
+
+    <div class="sidebar-bottom">
+        <div class="server-indicator"></div>
+        <div>
+            <strong>DHCP Server</strong>
+            <small>Local simulation</small>
+        </div>
+        <span class="online">●</span>
+    </div>
+
+</div>
+
+<main class="main-content">
+
+    <header class="topbar">
+        <div>
+            <h1>Network Dashboard</h1>
+            <p>Monitor and manage your DHCP network environment.</p>
+        </div>
+
+        <div class="topbar-right">
+            <span class="live-status">● SYSTEM ONLINE</span>
+            <div class="avatar">NS</div>
+        </div>
+    </header>
+
+    <section class="welcome">
+        <div>
+            <span class="eyebrow">NETWORK OVERVIEW</span>
+            <h2>Welcome to NetSim</h2>
+            <p>Your centralized DHCP network monitoring and simulation platform.</p>
+        </div>
+        <div class="date-display" id="currentDate"></div>
+    </section>
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Total IP Pool</span>
+                <span class="stat-icon blue">⌘</span>
+            </div>
+            <h2 id="totalIPs">100</h2>
+            <small>Configured addresses</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Allocated IPs</span>
+                <span class="stat-icon green">✓</span>
+            </div>
+            <h2 id="allocatedIPs">0</h2>
+            <small>Currently assigned</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Available IPs</span>
+                <span class="stat-icon purple">◈</span>
+            </div>
+            <h2 id="availableIPs">100</h2>
+            <small>Ready for allocation</small>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Connected Clients</span>
+                <span class="stat-icon orange">▣</span>
+            </div>
+            <h2 id="clientCount">0</h2>
+            <small>Simulated devices</small>
+        </div>
+
+    </section>
+
+    <section class="content-grid">
+
+        <div class="panel topology-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Network Topology</h3>
+                    <p>DHCP server and connected clients</p>
+                </div>
+                <span class="live-status">● LIVE VIEW</span>
+            </div>
+
+            <div class="network-map">
+
+                <div class="network-node server-node">
+                    <div class="node-icon">▣</div>
+                    <strong>DHCP Server</strong>
+                    <small>192.168.1.1</small>
+                    <span class="node-status">ONLINE</span>
+                </div>
+
+                <div class="connection-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+
+                <div class="client-nodes">
+
+                    <div class="network-node client-node">
+                        <div class="node-icon">💻</div>
+                        <strong>Client 01</strong>
+                        <small id="client1IP">Not assigned</small>
+                    </div>
+
+                    <div class="network-node client-node">
+                        <div class="node-icon">🖥️</div>
+                        <strong>Client 02</strong>
+                        <small id="client2IP">Not assigned</small>
+                    </div>
+
+                    <div class="network-node client-node">
+                        <div class="node-icon">📱</div>
+                        <strong>Client 03</strong>
+                        <small id="client3IP">Not assigned</small>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel server-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Server Configuration</h3>
+                    <p>Current network settings</p>
+                </div>
+                <span class="server-badge">ACTIVE</span>
+            </div>
+
+            <div class="config-row">
+                <span>Server IP</span>
+                <strong>192.168.1.1</strong>
+            </div>
+
+            <div class="config-row">
+                <span>Subnet Mask</span>
+                <strong>255.255.255.0</strong>
+            </div>
+
+            <div class="config-row">
+                <span>Default Gateway</span>
+                <strong>192.168.1.1</strong>
+            </div>
+
+            <div class="config-row">
+                <span>Address Pool</span>
+                <strong>192.168.1.100 – 199</strong>
+            </div>
+
+            <div class="config-row">
+                <span>Lease Duration</span>
+                <strong>24 Hours</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="bottom-grid">
+
+        <div class="panel simulation-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>DHCP Protocol Simulation</h3>
+                    <p>Discover → Offer → Request → Acknowledge</p>
+                </div>
+            </div>
+
+            <div class="dora-steps">
+
+                <div class="dora-step" id="step1">
+                    <span>01</span>
+                    <strong>DISCOVER</strong>
+                    <small>Client broadcasts request</small>
+                </div>
+
+                <div class="dora-step" id="step2">
+                    <span>02</span>
+                    <strong>OFFER</strong>
+                    <small>Server offers an IP</small>
+                </div>
+
+                <div class="dora-step" id="step3">
+                    <span>03</span>
+                    <strong>REQUEST</strong>
+                    <small>Client requests offered IP</small>
+                </div>
+
+                <div class="dora-step" id="step4">
+                    <span>04</span>
+                    <strong>ACKNOWLEDGE</strong>
+                    <small>Server confirms assignment</small>
+                </div>
+
+            </div>
+
+            <div class="simulation-controls">
+                <button class="primary-btn" id="startSimulation">
+                    ▶ Start Simulation
+                </button>
+
+                <button class="secondary-btn" id="resetSimulation">
+                    ↻ Reset
+                </button>
+            </div>
+
+            <p id="simulationStatus" class="simulation-status">
+                Ready to start DHCP simulation.
+            </p>
+
+        </div>
+
+        <div class="panel logs-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Recent Activity</h3>
+                    <p>Network event monitor</p>
+                </div>
+                <span class="live-status">● MONITORING</span>
+            </div>
+
+            <div id="activityLogs" class="activity-logs">
+
+                <div class="empty-state">
+                    No network activity yet.
+                    <br>
+                    Start a simulation to see events.
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer>
+        NetSim DHCP Network Simulator
+        <span>Academic Network Simulation Project</span>
+    </footer>
+
+</main>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

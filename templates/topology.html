@@ -1,0 +1,397 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Network Topology | NetSim</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .topology-page {
+            padding: 30px;
+            color: #e7efff;
+        }
+
+        .topology-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .topology-header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .topology-header p,
+        .topology-muted {
+            color: #91acd4;
+        }
+
+        .topology-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .topology-stat,
+        .topology-panel {
+            background: #142138;
+            border: 1px solid #293d5d;
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        .topology-stat span {
+            color: #91acd4;
+        }
+
+        .topology-stat h2 {
+            font-size: 34px;
+            margin-top: 12px;
+        }
+
+        .topology-panel {
+            margin-bottom: 25px;
+        }
+
+        .topology-panel h2 {
+            font-size: 21px;
+            margin-bottom: 8px;
+        }
+
+        .network-canvas {
+            background-color: #0b1527;
+            background-image: radial-gradient(
+                #28466b 1px,
+                transparent 1px
+            );
+            background-size: 25px 25px;
+            border: 1px solid #293d5d;
+            border-radius: 16px;
+            padding: 35px 20px;
+            margin-top: 25px;
+            min-height: 300px;
+        }
+
+        .server-visual {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .server-node {
+            width: 210px;
+            padding: 22px;
+            border: 1px solid #438bff;
+            border-radius: 18px;
+            background: #18365c;
+            box-shadow: 0 0 25px #367df533;
+        }
+
+        .server-icon {
+            font-size: 35px;
+            margin-bottom: 10px;
+        }
+
+        .server-node strong,
+        .client-node strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .server-node small,
+        .client-node small {
+            display: block;
+            color: #a9c3e9;
+            margin-top: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .server-status {
+            display: inline-block;
+            margin-top: 12px;
+            color: #22d6a2;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .network-connector {
+            width: 2px;
+            height: 65px;
+            margin: auto;
+            background: linear-gradient(
+                #438bff,
+                #19d7b0
+            );
+            box-shadow: 0 0 12px #438bff;
+        }
+
+        .client-container {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(190px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .client-node {
+            text-align: center;
+            background: #142b36;
+            border: 1px solid #13a889;
+            border-radius: 15px;
+            padding: 22px 12px;
+            min-width: 0;
+        }
+
+        .client-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .client-online {
+            display: inline-block;
+            color: #20d6a1;
+            background: #103e36;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 12px;
+        }
+
+        .empty-topology {
+            text-align: center;
+            padding: 40px 15px;
+            color: #91acd4;
+            grid-column: 1 / -1;
+        }
+
+        .client-table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .client-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .client-table th,
+        .client-table td {
+            text-align: left;
+            padding: 16px 12px;
+            border-bottom: 1px solid #293d5d;
+        }
+
+        .client-table th {
+            color: #75aaff;
+            font-size: 13px;
+        }
+
+        .client-table td {
+            color: #d7e3f8;
+        }
+
+        .topology-refresh {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(120deg, #367df5, #6857e9);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #topologyMessage {
+            margin-top: 15px;
+            color: #ff9b9b;
+        }
+
+        @media(max-width: 800px) {
+            .topology-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .topology-page {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="brand">
+        <span class="brand-icon">🌐</span>
+        <div>
+            <h2>NetSim</h2>
+            <small>DHCP Simulator</small>
+        </div>
+    </div>
+
+    <div class="menu-label">MAIN MENU</div>
+
+    <a href="/" class="nav-item">▦ &nbsp; Dashboard</a>
+    <a href="/topology" class="nav-item active">⌘ &nbsp; Network Topology</a>
+    <a href="/ip-management" class="nav-item">▣ &nbsp; IP Management</a>
+    <a href="/lease-management" class="nav-item">◷ &nbsp; Lease Management</a>
+    <a href="/simulation" class="nav-item">⇄ &nbsp; DHCP Simulation</a>
+    <a href="/activity-logs" class="nav-item">▤ &nbsp; Activity Logs</a>
+
+    <div class="sidebar-bottom">
+        <div class="server-indicator"></div>
+        <div>
+            <strong>DHCP Server</strong>
+            <small>Local simulation</small>
+        </div>
+        <span class="online">●</span>
+    </div>
+
+</div>
+
+<main class="main-content">
+
+    <div class="topology-page">
+
+        <header class="topology-header">
+
+            <div>
+                <h1>Network Topology</h1>
+                <p>Live visualization of the DHCP server and connected clients.</p>
+            </div>
+
+            <button class="topology-refresh" id="refreshTopology">
+                ↻ Refresh Topology
+            </button>
+
+        </header>
+
+        <section class="topology-stats">
+
+            <div class="topology-stat">
+                <span>Total IP Pool</span>
+                <h2 id="topologyTotal">100</h2>
+            </div>
+
+            <div class="topology-stat">
+                <span>Allocated IPs</span>
+                <h2 id="topologyAllocated">0</h2>
+            </div>
+
+            <div class="topology-stat">
+                <span>Connected Clients</span>
+                <h2 id="topologyClients">0</h2>
+            </div>
+
+        </section>
+
+        <section class="topology-panel">
+
+            <h2>Live Network Map</h2>
+
+            <p class="topology-muted">
+                DHCP server and currently allocated network devices.
+            </p>
+
+            <div class="network-canvas">
+
+                <div class="server-visual">
+
+                    <div class="server-node">
+
+                        <div class="server-icon">🖧</div>
+
+                        <strong id="serverName">
+                            DHCP Server
+                        </strong>
+
+                        <small id="serverIP">
+                            192.168.1.1
+                        </small>
+
+                        <span class="server-status">
+                            ● ONLINE
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="network-connector"></div>
+
+                <div class="client-container" id="clientContainer">
+
+                    <div class="empty-topology">
+                        No connected clients yet.
+                        <br><br>
+                        Allocate an IP address through IP Management
+                        to see clients here.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <p id="topologyMessage"></p>
+
+        </section>
+
+        <section class="topology-panel">
+
+            <h2>Connected Device Details</h2>
+
+            <p class="topology-muted">
+                Information about currently allocated clients.
+            </p>
+
+            <div class="client-table-wrapper">
+
+                <table class="client-table">
+
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>IP Address</th>
+                            <th>MAC Address</th>
+                            <th>Allocated At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="topologyTableBody">
+
+                        <tr>
+                            <td colspan="5"
+                                style="text-align:center;padding:25px;">
+                                Loading network information...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<script src="{{ url_for('static', filename='topology.js') }}"></script>
+
+</body>
+</html>

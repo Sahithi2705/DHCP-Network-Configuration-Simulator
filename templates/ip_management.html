@@ -1,0 +1,959 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Management | NetSim</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #080d19;
+            color: #edf3ff;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 255px;
+            background: #0c1424;
+            border-right: 1px solid #25344c;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 65px;
+        }
+
+        .brand-icon {
+            font-size: 38px;
+        }
+
+        .brand h2 {
+            font-size: 25px;
+        }
+
+        .brand small {
+            display: block;
+            color: #8ba5cc;
+            margin-top: 5px;
+        }
+
+        .menu-label {
+            font-size: 12px;
+            color: #7187a8;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 0 0 20px 15px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 17px 15px;
+            border-radius: 10px;
+            color: #9db5da;
+            text-decoration: none;
+            margin-bottom: 8px;
+            transition: .25s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #1d3557;
+            color: #69a4ff;
+        }
+
+        .main {
+            margin-left: 255px;
+            width: calc(100% - 255px);
+            padding: 40px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .topbar h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .topbar p,
+        .muted {
+            color: #8da8d0;
+        }
+
+        .status {
+            background: #10352f;
+            color: #18d6a2;
+            border: 1px solid #155c50;
+            border-radius: 30px;
+            padding: 12px 18px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #17243a, #111b2e);
+            border: 1px solid #273a58;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.12);
+        }
+
+        .stat-label {
+            color: #8faedc;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 17px 0 8px;
+        }
+
+        .blue { color: #60a5ff; }
+        .green { color: #16d6a3; }
+        .purple { color: #b69aff; }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .section-heading h2 {
+            font-size: 20px;
+        }
+
+        .section-heading p {
+            margin-top: 7px;
+            color: #8da8d0;
+            font-size: 13px;
+        }
+
+        .allocation-card {
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            color: #a9bfdf;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px;
+            border-radius: 9px;
+            background: #0b1526;
+            border: 1px solid #304461;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            min-width: 0;
+        }
+
+        input:focus, select:focus {
+            border-color: #5794ff;
+            box-shadow: 0 0 0 3px rgba(87,148,255,.12);
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 9px;
+            padding: 14px 19px;
+            font-family: inherit;
+            font-weight: 700;
+            transition: .2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.12);
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .primary-btn {
+            background: linear-gradient(120deg, #347ef5, #6959e8);
+            color: white;
+            white-space: nowrap;
+        }
+
+        .release-btn {
+            background: #45202c;
+            border: 1px solid #77364b;
+            color: #ff9aae;
+            padding: 9px 13px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .search {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter {
+            width: 190px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        th {
+            text-align: left;
+            color: #7895bd;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            padding: 16px 12px;
+            border-bottom: 1px solid #30415c;
+        }
+
+        td {
+            padding: 17px 12px;
+            border-bottom: 1px solid #24354d;
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: rgba(69,113,179,.08);
+        }
+
+        .ip-address {
+            color: #80b4ff;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .available {
+            background: #10392f;
+            color: #25d6a1;
+        }
+
+        .allocated {
+            background: #392c18;
+            color: #ffc56a;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #8299ba;
+        }
+
+        .logs {
+            display: grid;
+            gap: 12px;
+        }
+
+        .log-item {
+            background: #101c30;
+            border: 1px solid #2b3e59;
+            border-left: 3px solid #428cff;
+            border-radius: 9px;
+            padding: 15px;
+        }
+
+        .log-item strong {
+            font-size: 13px;
+        }
+
+        .log-item small {
+            display: block;
+            margin-top: 7px;
+            color: #849fc4;
+        }
+
+        .message {
+            display: none;
+            padding: 13px 16px;
+            border-radius: 9px;
+            margin-bottom: 18px;
+            font-size: 13px;
+        }
+
+        .message.success {
+            display: block;
+            background: #10392f;
+            color: #50e2b4;
+        }
+
+        .message.error {
+            display: block;
+            background: #44212c;
+            color: #ff9aab;
+        }
+
+        footer {
+            margin-top: 35px;
+            padding-top: 22px;
+            border-top: 1px solid #25354b;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: #7895bd;
+            font-size: 12px;
+        }
+
+        @media(max-width: 1000px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 700px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <span class="brand-icon">🌐</span>
+            <div>
+                <h2>NetSim</h2>
+                <small>DHCP Simulator</small>
+            </div>
+        </div>
+
+        <div class="menu-label">MAIN MENU</div>
+
+        <a href="/" class="nav-item">▦ &nbsp; Dashboard</a>
+        <a href="/topology" class="nav-item">⌘ &nbsp; Network Topology</a>
+        <a href="/ip-management" class="nav-item active">▣ &nbsp; IP Management</a>
+        <a href="/lease-management" class="nav-item">◷ &nbsp; Lease Management</a>
+        <a href="/simulation" class="nav-item">⇄ &nbsp; DHCP Simulation</a>
+        <a href="/activity-logs" class="nav-item">▤ &nbsp; Activity Logs</a>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>IP Address Management</h1>
+                <p>Monitor, allocate and manage your DHCP address pool.</p>
+            </div>
+
+            <span class="status">● IPAM ACTIVE</span>
+        </header>
+
+        <!-- STATISTICS -->
+        <section class="stats">
+
+            <div class="card">
+                <div class="stat-label">TOTAL IP ADDRESSES</div>
+                <div class="stat-value" id="totalIPs">100</div>
+                <div class="muted">Configured address pool</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-label">ALLOCATED ADDRESSES</div>
+                <div class="stat-value green" id="allocatedIPs">0</div>
+                <div class="muted">Currently assigned to clients</div>
+            </div>
+
+            <div class="card">
+                <div class="stat-label">AVAILABLE ADDRESSES</div>
+                <div class="stat-value purple" id="availableIPs">100</div>
+                <div class="muted">Ready for allocation</div>
+            </div>
+
+        </section>
+
+        <!-- ALLOCATION FORM -->
+        <section class="card allocation-card">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Allocate an IP Address</h2>
+                    <p>Assign an available address to a network device.</p>
+                </div>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <form id="allocationForm">
+
+                <div class="form-grid">
+
+                    <div class="field">
+                        <label for="ipSelect">SELECT IP ADDRESS</label>
+                        <select id="ipSelect" required>
+                            <option value="">Loading addresses...</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="clientName">CLIENT NAME</label>
+                        <input
+                            type="text"
+                            id="clientName"
+                            placeholder="e.g. Laptop 01"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="macAddress">MAC ADDRESS</label>
+                        <input
+                            type="text"
+                            id="macAddress"
+                            placeholder="AA:BB:CC:DD:EE:FF"
+                            pattern="^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+                            title="Enter a valid MAC address."
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="primary-btn" id="allocateBtn">
+                        + Allocate IP
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+        <!-- IP TABLE -->
+        <section class="card">
+
+            <div class="section-heading">
+                <div>
+                    <h2>IP Address Pool</h2>
+                    <p>Complete overview of configured network addresses.</p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+
+                <input
+                    type="search"
+                    class="search"
+                    id="searchInput"
+                    placeholder="Search IP, client or MAC address..."
+                >
+
+                <select class="filter" id="statusFilter">
+                    <option value="All">All statuses</option>
+                    <option value="Available">Available</option>
+                    <option value="Allocated">Allocated</option>
+                </select>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Client Name</th>
+                            <th>MAC Address</th>
+                            <th>Allocated At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="ipTableBody">
+                        <tr>
+                            <td colspan="6" class="empty">
+                                Loading IP addresses...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+        <!-- ACTIVITY LOG -->
+        <section class="card" style="margin-top:30px;">
+
+            <div class="section-heading">
+                <div>
+                    <h2>IP Allocation History</h2>
+                    <p>Recent address allocation and release events.</p>
+                </div>
+            </div>
+
+            <div class="logs" id="activityLogs">
+                <div class="empty">Loading activity...</div>
+            </div>
+
+        </section>
+
+        <footer>
+            <span>NetSim DHCP Network Simulator</span>
+            <span>IP Address Management Module</span>
+        </footer>
+
+    </main>
+
+</div>
+
+<script>
+
+    let allAddresses = [];
+
+    // =====================================
+    // LOAD IP DATA
+    // =====================================
+
+    async function loadData() {
+
+        try {
+
+            const response = await fetch("/api/ip-addresses");
+
+            if (!response.ok) {
+                throw new Error("Unable to retrieve IP data.");
+            }
+
+            const data = await response.json();
+
+            allAddresses = data.addresses;
+
+            document.getElementById("totalIPs").textContent = data.total;
+            document.getElementById("allocatedIPs").textContent = data.allocated;
+            document.getElementById("availableIPs").textContent = data.available;
+
+            renderTable();
+            renderDropdown();
+            renderLogs(data.logs);
+
+        } catch (error) {
+
+            showMessage(error.message, "error");
+
+        }
+    }
+
+
+    // =====================================
+    // RENDER IP TABLE
+    // =====================================
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+    }
+
+    function renderTable() {
+
+        const tbody = document.getElementById("ipTableBody");
+
+        const search = document.getElementById("searchInput")
+            .value.toLowerCase();
+
+        const filter = document.getElementById("statusFilter").value;
+
+        const filtered = allAddresses.filter(ip => {
+
+            const matchesSearch =
+                ip.ip_address.toLowerCase().includes(search) ||
+                (ip.client_name || "").toLowerCase().includes(search) ||
+                (ip.mac_address || "").toLowerCase().includes(search);
+
+            const matchesStatus =
+                filter === "All" || ip.status === filter;
+
+            return matchesSearch && matchesStatus;
+
+        });
+
+        if (filtered.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty">
+                        No matching IP addresses found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(ip => {
+
+            const allocated = ip.status === "Allocated";
+
+            return `
+                <tr>
+
+                    <td class="ip-address">
+                        ${escapeHTML(ip.ip_address)}
+                    </td>
+
+                    <td>
+                        <span class="badge ${allocated ? "allocated" : "available"}">
+                            ${escapeHTML(ip.status)}
+                        </span>
+                    </td>
+
+                    <td>${escapeHTML(ip.client_name || "—")}</td>
+
+                    <td>${escapeHTML(ip.mac_address || "—")}</td>
+
+                    <td>${escapeHTML(ip.allocated_at || "—")}</td>
+
+                    <td>
+                        ${allocated
+                            ? `<button class="release-btn"
+                                onclick="releaseIP('${escapeHTML(ip.ip_address)}')">
+                                Release
+                               </button>`
+                            : `<span class="muted">Available</span>`
+                        }
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+
+    }
+
+
+    // =====================================
+    // POPULATE AVAILABLE IP DROPDOWN
+    // =====================================
+
+    function renderDropdown() {
+
+        const dropdown = document.getElementById("ipSelect");
+
+        const available = allAddresses.filter(
+            ip => ip.status === "Available"
+        );
+
+        dropdown.innerHTML =
+            '<option value="">Select an IP address</option>';
+
+        available.forEach(ip => {
+
+            const option = document.createElement("option");
+
+            option.value = ip.ip_address;
+            option.textContent = ip.ip_address;
+
+            dropdown.appendChild(option);
+
+        });
+
+        dropdown.disabled = available.length === 0;
+
+        document.getElementById("allocateBtn").disabled =
+            available.length === 0;
+
+    }
+
+
+    // =====================================
+    // ALLOCATE IP
+    // =====================================
+
+    document.getElementById("allocationForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const ip = document.getElementById("ipSelect").value;
+            const client = document.getElementById("clientName").value.trim();
+            const mac = document.getElementById("macAddress").value.trim();
+
+            if (!ip || !client || !mac) {
+
+                showMessage("Please complete all fields.", "error");
+                return;
+
+            }
+
+            const button = document.getElementById("allocateBtn");
+            button.disabled = true;
+
+            try {
+
+                const response = await fetch("/api/ip-addresses/allocate", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        ip_address: ip,
+                        client_name: client,
+                        mac_address: mac
+                    })
+
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message);
+                }
+
+                showMessage(result.message, "success");
+
+                this.reset();
+
+                await loadData();
+
+            } catch (error) {
+
+                showMessage(error.message, "error");
+
+            } finally {
+
+                button.disabled = false;
+                renderDropdown();
+
+            }
+
+        });
+
+
+    // =====================================
+    // RELEASE IP
+    // =====================================
+
+    async function releaseIP(ip) {
+
+        const confirmed = confirm(
+            `Are you sure you want to release ${ip}?`
+        );
+
+        if (!confirmed) return;
+
+        try {
+
+            const response = await fetch("/api/ip-addresses/release", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    ip_address: ip
+                })
+
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message);
+            }
+
+            showMessage(result.message, "success");
+
+            await loadData();
+
+        } catch (error) {
+
+            showMessage(error.message, "error");
+
+        }
+
+    }
+
+
+    // =====================================
+    // ACTIVITY LOGS
+    // =====================================
+
+    function renderLogs(logs) {
+
+        const container = document.getElementById("activityLogs");
+
+        if (!logs.length) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    No allocation activity recorded yet.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = logs.map(log => `
+
+            <div class="log-item">
+
+                <strong>
+                    ${escapeHTML(log.action)} —
+                    ${escapeHTML(log.ip_address)}
+                </strong>
+
+                <small>
+                    Client: ${escapeHTML(log.client_name || "Unknown")}
+                    &nbsp; | &nbsp;
+                    ${escapeHTML(log.timestamp)}
+                </small>
+
+            </div>
+
+        `).join("");
+
+    }
+
+
+    // =====================================
+    // SEARCH AND FILTER
+    // =====================================
+
+    document.getElementById("searchInput")
+        .addEventListener("input", renderTable);
+
+    document.getElementById("statusFilter")
+        .addEventListener("change", renderTable);
+
+
+    // =====================================
+    // DISPLAY MESSAGES
+    // =====================================
+
+    function showMessage(message, type) {
+
+        const box = document.getElementById("message");
+
+        box.textContent = message;
+        box.className = "message " + type;
+
+        setTimeout(() => {
+
+            box.className = "message";
+
+        }, 4000);
+
+    }
+
+
+    // INITIAL LOAD
+
+    loadData();
+
+</script>
+
+</body>
+</html>

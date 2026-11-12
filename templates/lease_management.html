@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lease Management | NetSim</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .lease-page {
+            padding: 30px;
+        }
+
+        .lease-intro {
+            margin: 25px 0;
+            color: #91add3;
+        }
+
+        .lease-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 25px;
+        }
+
+        .lease-stat {
+            background: #142137;
+            border: 1px solid #293e5c;
+            border-radius: 16px;
+            padding: 23px;
+        }
+
+        .lease-stat span {
+            color: #91b7ec;
+            font-size: 14px;
+        }
+
+        .lease-stat h2 {
+            color: white;
+            font-size: 30px;
+            margin: 12px 0 5px;
+        }
+
+        .lease-stat small {
+            color: #7897bd;
+        }
+
+        .lease-panel {
+            background: #142137;
+            border: 1px solid #293e5c;
+            border-radius: 18px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .lease-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .lease-panel h2 {
+            color: white;
+            margin-bottom: 7px;
+        }
+
+        .lease-panel p {
+            color: #91add3;
+            font-size: 13px;
+        }
+
+        .lease-search {
+            padding: 12px 15px;
+            background: #0c1729;
+            border: 1px solid #304867;
+            border-radius: 9px;
+            color: white;
+            min-width: 230px;
+        }
+
+        .lease-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .lease-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        .lease-table th {
+            text-align: left;
+            color: #91b7ec;
+            padding: 15px;
+            border-bottom: 1px solid #304867;
+            font-size: 13px;
+        }
+
+        .lease-table td {
+            padding: 16px 15px;
+            color: #d5e4f8;
+            border-bottom: 1px solid #263a55;
+            font-size: 13px;
+        }
+
+        .lease-table tr:hover {
+            background: #192d48;
+        }
+
+        .lease-status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status-active {
+            background: #104638;
+            color: #27d9a5;
+        }
+
+        .status-warning {
+            background: #51401b;
+            color: #ffd36c;
+        }
+
+        .status-expired {
+            background: #512929;
+            color: #ff8585;
+        }
+
+        .lease-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lease-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 7px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .renew-btn {
+            background: #2868c7;
+        }
+
+        .release-btn {
+            background: #a83c47;
+        }
+
+        .lease-btn:hover {
+            opacity: .8;
+        }
+
+        .lease-btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .lease-message {
+            padding: 13px;
+            border-radius: 9px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .lease-message.success {
+            display: block;
+            background: #104638;
+            color: #27d9a5;
+        }
+
+        .lease-message.error {
+            display: block;
+            background: #512929;
+            color: #ff8585;
+        }
+
+        .lease-history-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 15px;
+            background: #0c1729;
+            border-radius: 10px;
+            border-left: 3px solid #438cff;
+            flex-wrap: wrap;
+        }
+
+        .history-item strong {
+            color: #d5e4f8;
+        }
+
+        .history-item small {
+            color: #7897bd;
+        }
+
+        .empty-state {
+            padding: 35px;
+            text-align: center;
+            color: #7897bd;
+        }
+
+        .lease-refresh {
+            background: #293d59;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .lease-refresh:hover {
+            background: #36577d;
+        }
+
+        @media(max-width: 1000px) {
+            .lease-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 600px) {
+            .lease-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .lease-page {
+                padding: 15px;
+            }
+
+            .lease-search {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="brand">
+        <span class="brand-icon">🌐</span>
+
+        <div>
+            <h2>NetSim</h2>
+            <small>DHCP Simulator</small>
+        </div>
+    </div>
+
+    <div class="menu-label">MAIN MENU</div>
+
+    <a href="/" class="nav-item">▦ &nbsp; Dashboard</a>
+
+    <a href="/topology" class="nav-item">
+        ⌘ &nbsp; Network Topology
+    </a>
+
+    <a href="/ip-management" class="nav-item">
+        ▣ &nbsp; IP Management
+    </a>
+
+    <a href="/lease-management" class="nav-item active">
+        ◷ &nbsp; Lease Management
+    </a>
+
+    <a href="/simulation" class="nav-item">
+        ⇄ &nbsp; DHCP Simulation
+    </a>
+
+    <a href="/activity-logs" class="nav-item">
+        ▤ &nbsp; Activity Logs
+    </a>
+
+    <div class="sidebar-bottom">
+        <div class="server-indicator"></div>
+
+        <div>
+            <strong>DHCP Server</strong>
+            <small>Local simulation</small>
+        </div>
+
+        <span class="online">●</span>
+    </div>
+
+</div>
+
+
+<main class="main-content lease-page">
+
+    <header class="topbar">
+
+        <div>
+            <h1>DHCP Lease Management</h1>
+
+            <p>
+                Monitor, renew and release allocated IP address leases.
+            </p>
+        </div>
+
+        <span class="live-status">● SERVER ONLINE</span>
+
+    </header>
+
+
+    <section class="lease-intro">
+
+        <h2>Lease Overview</h2>
+
+        <p>
+            Monitor active DHCP clients and manage their IP lease lifecycle.
+        </p>
+
+    </section>
+
+
+    <!-- STATISTICS -->
+
+    <section class="lease-stats">
+
+        <div class="lease-stat">
+            <span>Total Active Leases</span>
+            <h2 id="totalLeases">0</h2>
+            <small>Currently allocated IPs</small>
+        </div>
+
+        <div class="lease-stat">
+            <span>Available IP Pool</span>
+            <h2 id="availableLeases">0</h2>
+            <small>Ready for allocation</small>
+        </div>
+
+        <div class="lease-stat">
+            <span>Expiring Soon</span>
+            <h2 id="expiringLeases">0</h2>
+            <small>Within the next minute</small>
+        </div>
+
+        <div class="lease-stat">
+            <span>Default Lease</span>
+            <h2>24 Hrs</h2>
+            <small>Standard lease duration</small>
+        </div>
+
+    </section>
+
+
+    <!-- ACTIVE LEASES -->
+
+    <section class="lease-panel">
+
+        <div class="lease-panel-header">
+
+            <div>
+                <h2>Active IP Leases</h2>
+
+                <p>
+                    View client details and remaining lease time.
+                </p>
+            </div>
+
+            <div>
+                <button class="lease-refresh" id="refreshLeases">
+                    ↻ Refresh
+                </button>
+            </div>
+
+        </div>
+
+
+        <input
+            type="text"
+            class="lease-search"
+            id="leaseSearch"
+            placeholder="Search client, IP or MAC address..."
+        >
+
+
+        <div class="lease-table-wrapper">
+
+            <table class="lease-table">
+
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>IP Address</th>
+                        <th>MAC Address</th>
+                        <th>Allocated At</th>
+                        <th>Lease Duration</th>
+                        <th>Time Remaining</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="leaseTableBody">
+
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            Loading active leases...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div id="leaseMessage" class="lease-message"></div>
+
+    </section>
+
+
+    <!-- LEASE HISTORY -->
+
+    <section class="lease-panel">
+
+        <div class="lease-panel-header">
+
+            <div>
+                <h2>Lease Activity History</h2>
+
+                <p>
+                    Recent allocation, renewal, release and expiration events.
+                </p>
+            </div>
+
+        </div>
+
+        <div id="leaseHistory" class="lease-history-list">
+
+            <div class="empty-state">
+                Loading lease history...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        NetSim DHCP Network Simulator
+
+        <span>DHCP Lease Management Module</span>
+    </footer>
+
+</main>
+
+
+<script src="{{ url_for('static', filename='lease_management.js') }}"></script>
+
+</body>
+</html>
